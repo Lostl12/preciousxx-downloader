@@ -2,14 +2,24 @@ const express = require("express");
 const axios = require("axios");
 const path = require("path");
 
-const tiktok = require("./extractors/tiktok"); // call the TikTok extractor
+// Import all extractors
+const tiktok = require("./extractors/tiktok");
+const instagram = require("./extractors/instagram");
+const facebook = require("./extractors/facebook");
+const twitter = require("./extractors/twitter");
+const youtube = require("./extractors/youtube");
+const pinterest = require("./extractors/pinterest");
+const reddit = require("./extractors/reddit");
+const likee = require("./extractors/likee");
+const vimeo = require("./extractors/vimeo");
+const dailymotion = require("./extractors/dailymotion");
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve your frontend
+// Serve frontend
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
@@ -18,13 +28,21 @@ app.get("/", (req, res) => {
 app.post("/download", async (req, res) => {
   try {
     const url = req.body.url;
+    let data = null;
 
-    // Only TikTok for now
-    if (!url.includes("tiktok.com")) {
-      return res.json({ success: false });
-    }
+    // Detect platform
+    if (url.includes("tiktok.com")) data = await tiktok(url);
+    else if (url.includes("instagram.com")) data = await instagram(url);
+    else if (url.includes("facebook.com")) data = await facebook(url);
+    else if (url.includes("twitter.com") || url.includes("x.com")) data = await twitter(url);
+    else if (url.includes("youtube.com") || url.includes("youtu.be")) data = await youtube(url);
+    else if (url.includes("pinterest.com")) data = await pinterest(url);
+    else if (url.includes("reddit.com")) data = await reddit(url);
+    else if (url.includes("likee.video")) data = await likee(url);
+    else if (url.includes("vimeo.com")) data = await vimeo(url);
+    else if (url.includes("dailymotion.com")) data = await dailymotion(url);
 
-    const data = await tiktok(url);
+    if (!data) return res.json({ success: false });
 
     res.json({
       success: true,
