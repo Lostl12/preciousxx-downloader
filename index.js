@@ -1,30 +1,14 @@
-const express = require("express");
-const axios = require("axios");
+const fs = require("fs");
 const path = require("path");
 
-// Import all extractors
-const tiktok = require("./extractors/tiktok");
-const instagram = require("./extractors/instagram");
-const facebook = require("./extractors/facebook");
-const twitter = require("./extractors/twitter");
-const youtube = require("./extractors/youtube");
-const pinterest = require("./extractors/pinterest");
-const reddit = require("./extractors/reddit");
-const likee = require("./extractors/likee");
-const vimeo = require("./extractors/vimeo");
-const dailymotion = require("./extractors/dailymotion");
+// counter file
+const counterFile = path.join(__dirname, "utils/counter.json");
 
-const app = express();
+// Make sure the file exists
+if (!fs.existsSync(counterFile)) {
+  fs.writeFileSync(counterFile, JSON.stringify({ downloads: 0 }, null, 2));
+}
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Serve frontend
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
-
-// Handle download request
 app.post("/download", async (req, res) => {
   try {
     const url = req.body.url;
@@ -44,11 +28,17 @@ app.post("/download", async (req, res) => {
 
     if (!data) return res.json({ success: false });
 
+    // ✅ Increment download count safely
+    let counter = JSON.parse(fs.readFileSync(counterFile, "utf-8"));
+    counter.downloads += 1;
+    fs.writeFileSync(counterFile, JSON.stringify(counter, null, 2));
+
     res.json({
       success: true,
       thumbnail: data.thumbnail,
       size: data.size,
-      qualities: data.qualities
+      qualities: data.qualities,
+      totalDownloads: counter.downloads
     });
 
   } catch (err) {
@@ -56,27 +46,3 @@ app.post("/download", async (req, res) => {
     res.json({ success: false });
   }
 });
-
-// Force file download route
-app.get("/getfile", async (req, res) => {
-  try {
-    const fileUrl = req.query.url;
-
-    const response = await axios({
-      url: fileUrl,
-      method: "GET",
-      responseType: "stream"
-    });
-
-    res.setHeader("Content-Disposition", "attachment; filename=preciousxx.mp4");
-    res.setHeader("Content-Type", "video/mp4");
-
-    response.data.pipe(res);
-
-  } catch (err) {
-    res.send("Download failed");
-  }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
