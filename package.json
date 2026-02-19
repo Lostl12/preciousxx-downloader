@@ -1,9 +1,9 @@
-
 {
-  "name": "preciousxx",
+  "name": "preciousxx-downloader",
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "axios": "^1.6.0"
   }
 }
