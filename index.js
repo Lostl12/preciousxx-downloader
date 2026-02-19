@@ -4,8 +4,8 @@ const path = require("path");
 
 const app = express();
 
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
@@ -16,48 +16,43 @@ app.post("/download", async (req, res) => {
     const url = req.body.url;
 
     if (!url) {
-      return res.send("Enter a valid link");
+      return res.json({ success: false });
     }
 
-    let api = "";
-
-    // Detect platform automatically
+    // TikTok
     if (url.includes("tiktok.com")) {
-      api = `https://tikwm.com/api/?url=${encodeURIComponent(url)}`;
-    } 
-    else if (url.includes("instagram.com")) {
-      api = `https://api.ryzendesu.vip/api/downloader/igdl?url=${encodeURIComponent(url)}`;
-    } 
-    else {
-      return res.send("Platform not supported yet");
+      const api = `https://tikwm.com/api/?url=${encodeURIComponent(url)}`;
+      const response = await axios.get(api);
+      const video = response.data.data.play;
+
+      return res.json({
+        success: true,
+        preview: video,
+        qualities: [
+          { quality: "HD", url: video }
+        ]
+      });
     }
 
-    const response = await axios.get(api);
+    // Instagram
+    if (url.includes("instagram.com")) {
+      const api = `https://api.ryzendesu.vip/api/downloader/igdl?url=${encodeURIComponent(url)}`;
+      const response = await axios.get(api);
+      const video = response.data.data[0].url;
 
-    let videoUrl =
-      response.data?.data?.play ||
-      response.data?.data?.url ||
-      response.data?.data?.video;
-
-    if (!videoUrl) {
-      return res.send("Failed to fetch media");
+      return res.json({
+        success: true,
+        preview: video,
+        qualities: [
+          { quality: "HD", url: video }
+        ]
+      });
     }
 
-    res.send(`
-      <h2>Download Ready ✅</h2>
-      <video src="${videoUrl}" controls width="320"></video>
-      <br><br>
-      <a href="${videoUrl}" download>
-        <button style="padding:10px 20px;font-size:16px;">
-          Download Now
-        </button>
-      </a>
-      <br><br>
-      <a href="/">Back</a>
-    `);
+    res.json({ success: false });
 
   } catch (err) {
-    res.send("Error processing link");
+    res.json({ success: false });
   }
 });
 
