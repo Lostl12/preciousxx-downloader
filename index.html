@@ -8,41 +8,125 @@
       background: #0f172a;
       color: white;
       text-align: center;
-      padding-top: 80px;
+      padding: 40px;
     }
+
+    .box {
+      max-width: 500px;
+      margin: auto;
+    }
+
     input {
-      padding: 12px;
-      width: 80%;
-      max-width: 400px;
+      width: 100%;
+      padding: 14px;
       border-radius: 8px;
       border: none;
       margin-top: 10px;
     }
+
     button {
       padding: 12px 20px;
       margin-top: 15px;
-      border: none;
       border-radius: 8px;
+      border: none;
       background: #22c55e;
       color: white;
       font-size: 16px;
       cursor: pointer;
+      width: 100%;
     }
-    h1 {
-      color: #22c55e;
+
+    #loader {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .spinner {
+      border: 5px solid #1e293b;
+      border-top: 5px solid #22c55e;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: auto;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    video {
+      width: 100%;
+      margin-top: 20px;
+      border-radius: 10px;
+    }
+
+    .quality-btn {
+      margin-top: 10px;
+      background: #3b82f6;
     }
   </style>
 </head>
+
 <body>
+  <div class="box">
+    <h1>Preciousxx Downloader</h1>
+    <p>Download videos from social media</p>
 
-  <h1>Preciousxx Social Media Downloader</h1>
-  <p>Download TikTok & Instagram videos easily</p>
+    <form id="form">
+      <input type="text" id="url" placeholder="Paste video link..." required>
+      <button type="submit">Download</button>
+    </form>
 
-  <form action="/download" method="POST">
-    <input type="text" name="url" placeholder="Paste video link here..." required>
-    <br>
-    <button type="submit">Download</button>
-  </form>
+    <div id="loader">
+      <div class="spinner"></div>
+      <p>Fetching media...</p>
+    </div>
+
+    <div id="result"></div>
+  </div>
+
+<script>
+document.getElementById("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const url = document.getElementById("url").value;
+  const loader = document.getElementById("loader");
+  const result = document.getElementById("result");
+
+  loader.style.display = "block";
+  result.innerHTML = "";
+
+  const res = await fetch("/download", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ url })
+  });
+
+  const data = await res.json();
+
+  loader.style.display = "none";
+
+  if (!data.success) {
+    result.innerHTML = "<p>Failed to fetch media</p>";
+    return;
+  }
+
+  let html = `<video controls src="${data.preview}"></video>`;
+
+  data.qualities.forEach(q => {
+    html += `
+      <a href="${q.url}" download>
+        <button class="quality-btn">
+          Download ${q.quality}
+        </button>
+      </a>
+    `;
+  });
+
+  result.innerHTML = html;
+});
+</script>
 
 </body>
 </html>
