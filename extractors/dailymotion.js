@@ -1,21 +1,11 @@
-const axios = require("axios");
+import fetch from "node-fetch";
 
-module.exports = async function(url) {
-  const api = `https://api.akuari.my.id/dailymotion?url=${encodeURIComponent(url)}`;
-  const response = await axios.get(api);
-
-  if (!response.data || !response.data.result) return null;
-
-  const media = response.data.result;
-
-  const qualities = media.map((item) => ({
-    quality: item.quality || "HD",
-    url: `/getfile?url=${encodeURIComponent(item.url)}`
-  }));
-
-  return {
-    thumbnail: media[0].thumbnail || "",
-    size: `${media.length} file(s)`,
-    qualities
-  };
-};
+export default async function dailymotion(url) {
+  try {
+    const res = await fetch(`https://api.dailymotion.com/video/${url.split("/video/")[1]}?fields=thumbnail_url,url`);
+    const data = await res.json();
+    return { thumbnail: data.thumbnail_url, size: "Unknown", qualities: [{ name: "HD", url: data.url }] };
+  } catch {
+    return null;
+  }
+}
