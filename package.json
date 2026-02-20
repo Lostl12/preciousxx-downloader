@@ -1,5 +1,5 @@
 {
-  "name": "video-downloader",
+  "name": "downloader",
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",
@@ -7,7 +7,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "ytdl-core": "^4.11.5"
+    "express": "^4.18.2"
   }
 }
