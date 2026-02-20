@@ -1,19 +1,12 @@
-const ytdl = require("ytdl-core");
+import ytdl from "ytdl-core";
 
-module.exports = async function(url) {
-  const info = await ytdl.getInfo(url);
-  const formats = ytdl.filterFormats(info.formats, 'videoandaudio');
-
-  const qualities = formats
-    .filter(f => f.hasVideo && f.hasAudio)
-    .map(f => ({
-      quality: f.qualityLabel || "HD",
-      url: `/getfile?url=${encodeURIComponent(f.url)}`
-    }));
-
-  return {
-    thumbnail: info.videoDetails.thumbnails[0].url,
-    size: "HD",
-    qualities
-  };
-};
+export default async function youtube(url) {
+  try {
+    const info = await ytdl.getInfo(url);
+    const formats = ytdl.filterFormats(info.formats, "videoandaudio");
+    const hdFormat = formats.find(f => f.qualityLabel === "720p") || formats[0];
+    return { thumbnail: info.videoDetails.thumbnails.pop().url, size: "Unknown", qualities: [{ name: hdFormat.qualityLabel, url: hdFormat.url }] };
+  } catch {
+    return null;
+  }
+}
