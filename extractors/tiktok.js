@@ -5,6 +5,10 @@ export default async function tiktok(url) {
     const apiUrl = `https://api.tiktokv.com/aweme/v1/video/?url=${encodeURIComponent(url)}`;
     const res = await fetch(apiUrl);
     const data = await res.json();
-    return { thumbnail: data.thumbnail || "", size: "Unknown", qualities: [{ name: "HD", url: data.video_url }] };
-  } catch { return null; }
+    const videoUrl = data.video?.playAddr || "";
+    const thumbnail = data.video?.cover?.url || "";
+    return { thumbnail, size: "Unknown", qualities: [{ name: "HD", url: videoUrl }] };
+  } catch {
+    return { error: "Failed to fetch TikTok video" };
+  }
 }
