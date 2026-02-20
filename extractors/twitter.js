@@ -1,21 +1,13 @@
-const axios = require("axios");
+import fetch from "node-fetch";
 
-module.exports = async function(url) {
-  const api = `https://api.akuari.my.id/twitter?url=${encodeURIComponent(url)}`;
-  const response = await axios.get(api);
-
-  if (!response.data || !response.data.result) return null;
-
-  const media = response.data.result;
-
-  const qualities = media.map((item) => ({
-    quality: item.quality || "HD",
-    url: `/getfile?url=${encodeURIComponent(item.url)}`
-  }));
-
-  return {
-    thumbnail: media[0].thumbnail || "",
-    size: `${media.length} file(s)`,
-    qualities
-  };
-};
+export default async function twitter(url) {
+  try {
+    // Use public API service or parsing for simplicity
+    const apiUrl = `https://api.twitter.com/2/tweet?url=${encodeURIComponent(url)}`;
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+    return { thumbnail: data.thumbnail, size: "Unknown", qualities: [{ name: "HD", url: data.video_url }] };
+  } catch {
+    return null;
+  }
+}
