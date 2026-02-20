@@ -1,18 +1,15 @@
-const axios = require("axios");
+import fetch from "node-fetch";
 
-module.exports = async function(url) {
-  const api = `https://api.akuari.my.id/likee?url=${encodeURIComponent(url)}`;
-  const response = await axios.get(api);
-
-  if (!response.data || !response.data.result) return null;
-
-  const video = response.data.result.url;
-
-  return {
-    thumbnail: response.data.result.thumbnail || "",
-    size: "HD",
-    qualities: [
-      { quality: "HD", url: `/getfile?url=${encodeURIComponent(video)}` }
-    ]
-  };
-};
+export default async function likee(url) {
+  try {
+    const res = await fetch(url);
+    const html = await res.text();
+    const videoMatch = html.match(/"main_url":"(.*?)"/);
+    const videoUrl = videoMatch ? videoMatch[1].replace(/\\/g, "") : "";
+    const thumbnailMatch = html.match(/"cover_url":"(.*?)"/);
+    const thumbnail = thumbnailMatch ? thumbnailMatch[1].replace(/\\/g, "") : "";
+    return { thumbnail, size: "Unknown", qualities: [{ name: "HD", url: videoUrl }] };
+  } catch {
+    return null;
+  }
+}
