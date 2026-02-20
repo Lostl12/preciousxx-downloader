@@ -64,13 +64,19 @@ function clearLink() {
   document.getElementById("result").innerHTML = "";
 }
 
+/* UPDATED PASTE FUNCTION — works even if clipboard blocked */
 async function pasteLink() {
-  try {
-    const text = await navigator.clipboard.readText();
-    document.getElementById("link").value = text;
-  } catch (err) {
-    alert("Allow clipboard permission to paste link");
+  const input = document.getElementById("link");
+
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      input.value = await navigator.clipboard.readText();
+      return;
+    } catch (err) {}
   }
+
+  const text = prompt("Paste your TikTok link here:");
+  if (text) input.value = text;
 }
 </script>
 
