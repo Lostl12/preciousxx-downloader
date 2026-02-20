@@ -1,17 +1,19 @@
-const axios = require("axios");
+// extractors/tiktok.js
+import fetch from "node-fetch";
 
-module.exports = async function(url) {
-  const api = `https://tikwm.com/api/?url=${encodeURIComponent(url)}`;
-  const response = await axios.get(api);
+export default async function tiktok(url) {
+  try {
+    // Example: use unofficial API to get direct video URL
+    const apiUrl = `https://api.tiktokv.com/aweme/v1/video/?url=${encodeURIComponent(url)}`;
+    const res = await fetch(apiUrl);
+    const data = await res.json();
 
-  const video = response.data.data.play;       // video link
-  const thumbnail = response.data.data.cover;  // thumbnail image
-
-  return {
-    thumbnail,
-    size: "HD",
-    qualities: [
-      { quality: "HD", url: `/getfile?url=${encodeURIComponent(video)}` }
-    ]
-  };
-};
+    return {
+      thumbnail: data.thumbnail || "",
+      size: "Unknown",
+      qualities: [{ name: "HD", url: data.video_url }]
+    };
+  } catch (err) {
+    return null;
+  }
+}
