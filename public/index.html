@@ -1,109 +1,27 @@
-<body style="background: #121212; color: white; font-family: 'Segoe UI', sans-serif;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡ Downloader</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡ Downloader</h1>
 
-  <!-- ===== SITE HEADER ===== -->
-  <header style="text-align:center; margin-top:30px; margin-bottom:40px;">
-    <h1 style="
-      font-size:36px;
-      font-weight:bold;
-      letter-spacing:3px;
-      color:#00ffff;
-      text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;">
-      𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡
-    </h1>
-    <p style="color: gray; margin-top:-10px; font-size:16px;">
-      All Social Media Downloader
-    </p>
-  </header>
+<input type="text" id="url" placeholder="Paste video link here">
+<select id="platform">
+  <option value="tiktok">TikTok</option>
+  <option value="youtube">YouTube</option>
+  <option value="instagram">Instagram</option>
+  <option value="facebook">Facebook</option>
+  <option value="reddit">Reddit</option>
+  <option value="pinterest">Pinterest</option>
+</select>
+<button id="downloadBtn">Download</button>
 
-  <!-- ===== DOWNLOAD BOX ===== -->
-  <div style="text-align:center; margin-bottom:50px;">
-    <input id="url-input" type="text" placeholder="Paste video link here" style="
-      width:70%;
-      max-width:500px;
-      padding:12px 15px;
-      border-radius:10px;
-      border:none;
-      font-size:16px;
-      outline:none;
-    ">
-    <button id="download-btn" style="
-      padding:12px 25px;
-      margin-left:10px;
-      border:none;
-      border-radius:10px;
-      background: #00ffff;
-      color:#121212;
-      font-weight:bold;
-      cursor:pointer;
-      transition:0.3s;
-    " onmouseover="this.style.background='#00e5e5'" onmouseout="this.style.background='#00ffff'">
-      Download
-    </button>
-  </div>
+<div id="result"></div>
+<div id="counter">Downloads: 0</div>
 
-  <!-- ===== DOWNLOAD INFO ===== -->
-  <div id="download-info" style="text-align:center; font-size:14px; color:gray; margin-bottom:30px;">
-    <!-- Thumbnail, progress, and download info will appear here -->
-  </div>
-
-  <!-- ===== TOTAL DOWNLOAD COUNTER ===== -->
-  <div id="download-counter" style="text-align:center; font-weight:bold; margin-bottom:20px;">
-    Total downloads: 0
-  </div>
-
-  <!-- ===== SCRIPT ===== -->
-  <script>
-    // Fetch total downloads
-    async function updateCounter() {
-      try {
-        const res = await fetch("/counter");
-        const data = await res.json();
-        document.getElementById("download-counter").innerText =
-          "Total downloads: " + data.totalDownloads;
-      } catch (err) {
-        console.log("Failed to fetch counter", err);
-      }
-    }
-
-    updateCounter();
-    setInterval(updateCounter, 30000); // refresh every 30s
-
-    // Handle download click
-    document.getElementById("download-btn").addEventListener("click", async () => {
-      const url = document.getElementById("url-input").value.trim();
-      if(!url) return alert("Paste a link first!");
-      
-      const infoDiv = document.getElementById("download-info");
-      infoDiv.innerHTML = "Fetching download info...";
-      
-      try {
-        const res = await fetch("/download", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url })
-        });
-        const data = await res.json();
-        if(data.success) {
-          infoDiv.innerHTML = `
-            <img src="${data.thumbnail}" alt="thumb" style="max-width:200px; border-radius:10px; margin-bottom:10px;"><br>
-            File size: ${data.size || 'Unknown'}<br>
-            <button onclick="window.open('${data.qualities[0].url}', '_blank')" style="
-              padding:8px 15px;
-              border:none;
-              border-radius:8px;
-              background:#00ffff;
-              color:#121212;
-              font-weight:bold;
-              cursor:pointer;
-            ">Download HD</button>
-          `;
-        } else {
-          infoDiv.innerHTML = "Failed to fetch media.";
-        }
-      } catch(e) {
-        infoDiv.innerHTML = "Error fetching media.";
-      }
-    });
-  </script>
-
+<script src="script.js"></script>
 </body>
+</html>
