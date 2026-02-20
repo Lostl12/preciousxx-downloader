@@ -1,21 +1,11 @@
-const axios = require("axios");
+import fetch from "node-fetch";
 
-module.exports = async function(url) {
-  const api = `https://api.akuari.my.id/vimeo?url=${encodeURIComponent(url)}`;
-  const response = await axios.get(api);
-
-  if (!response.data || !response.data.result) return null;
-
-  const media = response.data.result;
-
-  const qualities = media.map((item) => ({
-    quality: item.quality || "HD",
-    url: `/getfile?url=${encodeURIComponent(item.url)}`
-  }));
-
-  return {
-    thumbnail: media[0].thumbnail || "",
-    size: `${media.length} file(s)`,
-    qualities
-  };
-};
+export default async function vimeo(url) {
+  try {
+    const res = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    return { thumbnail: data.thumbnail_url, size: "Unknown", qualities: [{ name: "HD", url }] };
+  } catch {
+    return null;
+  }
+}
