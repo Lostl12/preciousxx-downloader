@@ -1,28 +1,69 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡ Cleaner</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡ Downloader</title>
+<style>
+body { font-family: 'Arial', sans-serif; background: #fdf6f0; padding: 20px; text-align: center; }
+h1 { font-family: 'Times New Roman', serif; font-size: 32px; color: #d6336c; margin-bottom: 20px; }
+input { width: 90%; padding: 12px; font-size: 16px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ccc; }
+button { padding: 12px 20px; font-size: 16px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; color: white; }
+.clean-btn { background: #007bff; }
+.download-btn { background: #28a745; }
+#output { margin-top: 15px; word-break: break-all; font-weight: bold; font-size: 16px; }
+.platforms { margin-top: 20px; }
+</style>
 </head>
 <body>
 
-<h2>Paste Link</h2>
-<input id="url" placeholder="Paste link here">
-<button onclick="clean()">Clean</button>
+<h1>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡</h1>
 
-<p id="result"></p>
+<input type="text" id="linkInput" placeholder="Paste video link here">
+<br>
+<button class="clean-btn" id="cleanBtn">Clean & Copy</button>
+
+<div id="output"></div>
+
+<div class="platforms">
+  <button class="download-btn" onclick="download('tiktok')">TikTok</button>
+  <button class="download-btn" onclick="download('youtube')">YouTube</button>
+  <button class="download-btn" onclick="download('instagram')">Instagram</button>
+  <button class="download-btn" onclick="download('facebook')">Facebook</button>
+  <button class="download-btn" onclick="download('reddit')">Reddit</button>
+  <button class="download-btn" onclick="download('pinterest')">Pinterest</button>
+</div>
 
 <script>
-async function clean() {
-  const url = document.getElementById("url").value;
+function cleanLink(url) {
+  if (!url) return "";
+  url = url.trim();
+  url = url.replace(/(\?|&)utm_[^&]+/gi, "");
+  url = url.replace(/(\?|&)fbclid=[^&]+/gi, "");
+  url = url.replace(/(\?|&)igshid=[^&]+/gi, "");
+  url = url.replace("m.facebook.com", "facebook.com");
+  url = url.replace("mobile.twitter.com", "twitter.com");
+  url = url.replace("x.com", "twitter.com");
+  url = url.split("&")[0];
+  return url;
+}
 
-  const res = await fetch("/clean", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url })
-  });
+document.getElementById("cleanBtn").addEventListener("click", async () => {
+  const rawLink = document.getElementById("linkInput").value;
+  const cleaned = cleanLink(rawLink);
+  document.getElementById("output").innerText = cleaned || "No link detected";
+  if (cleaned) {
+    try { await navigator.clipboard.writeText(cleaned); } catch {}
+  }
+});
 
-  const data = await res.json();
-  document.getElementById("result").innerText = data.cleaned;
+function download(platform) {
+  const rawLink = document.getElementById("linkInput").value;
+  const link = cleanLink(rawLink);
+  if (!link) { alert("Paste a valid link first"); return; }
+
+  // Redirect to backend API for that platform
+  window.location.href = `/download/${platform}?url=` + encodeURIComponent(link);
 }
 </script>
 
