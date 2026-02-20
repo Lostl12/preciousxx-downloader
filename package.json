@@ -1,12 +1,8 @@
 {
-  "name": "link-cleaner",
+  "name": "precious-downloader",
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2"
-  }
+  "scripts": { "start": "node index.js" },
+  "dependencies": { "express": "^4.18.2", "node-fetch": "^3.3.1" }
 }
