@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x♡</title>
+<title>TikTok Downloader</title>
 
 <style>
 body {background:#0f0f0f; color:white; font-family:Arial,sans-serif; text-align:center; padding:30px;}
@@ -11,17 +11,22 @@ button {padding:12px 20px; border-radius:10px; border:none; cursor:pointer; font
 .fetch-btn {background:#444; color:white;}
 .download-btn {background:#ff4081; color:white; margin:8px;}
 .clear-btn {background:#00bcd4; color:white; margin:8px;}
+.paste-btn {background:#673ab7; color:white; margin:8px;}
 .card {margin-top:20px; padding:20px; background:#1a1a1a; border-radius:15px;}
 img {width:200px; border-radius:10px;}
+.powered {opacity:0.7; margin-top:-10px; margin-bottom:20px;}
 </style>
 </head>
 
 <body>
-<h2>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x♡</h2>
+
+<h2>TikTok Downloader</h2>
+<div class="powered">Powered by 𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x♡</div>
 
 <input id="link" placeholder="Paste video link">
 <br>
 <button class="fetch-btn" onclick="getMedia()">Fetch Media</button>
+<button class="paste-btn" onclick="pasteLink()">Paste</button>
 <button class="clear-btn" onclick="clearLink()">Clear</button>
 
 <div id="result"></div>
@@ -57,6 +62,15 @@ async function getMedia() {
 function clearLink() {
   document.getElementById("link").value = "";
   document.getElementById("result").innerHTML = "";
+}
+
+async function pasteLink() {
+  try {
+    const text = await navigator.clipboard.readText();
+    document.getElementById("link").value = text;
+  } catch (err) {
+    alert("Allow clipboard permission to paste link");
+  }
 }
 </script>
 
