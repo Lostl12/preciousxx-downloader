@@ -1,64 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡ Downloader</title>
+<title>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡</title>
+
 <style>
-body { font-family: Arial, sans-serif; background: #fff5f8; text-align: center; padding: 20px; }
-h1 { color: #d63384; margin-bottom: 20px; }
-input { width: 90%; padding: 12px; font-size: 16px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ccc; }
-button { padding: 12px 18px; margin: 6px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; background: #e83e8c; color: white; }
-button:hover { background: #c2185b; }
-#result { margin-top: 20px; font-size: 16px; }
-.download-link { display: block; margin: 10px auto; padding: 10px; width: 80%; background: #28a745; color: white; border-radius: 8px; text-decoration: none; }
+body {
+  font-family: Arial;
+  text-align: center;
+  background: #0f0f0f;
+  color: white;
+}
+
+input {
+  width: 80%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  margin-top: 20px;
+}
+
+button {
+  padding: 12px 20px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #ff2e63;
+  color: white;
+  font-weight: bold;
+}
+
+.download-btn {
+  background: #08d9d6;
+  color: black;
+  padding: 10px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+#result {
+  margin-top: 20px;
+}
 </style>
+
 </head>
+
 <body>
 
-<h1>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡</h1>
+<h2>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡</h2>
 
-<input id="url" placeholder="Paste video link here">
-
-<div>
-<button onclick="getVideo('tiktok')">TikTok</button>
-<button onclick="getVideo('youtube')">YouTube</button>
-<button onclick="getVideo('instagram')">Instagram</button>
-<button onclick="getVideo('facebook')">Facebook</button>
-<button onclick="getVideo('twitter')">Twitter</button>
-<button onclick="getVideo('reddit')">Reddit</button>
-<button onclick="getVideo('pinterest')">Pinterest</button>
-<button onclick="getVideo('vimeo')">Vimeo</button>
-<button onclick="getVideo('dailymotion')">Dailymotion</button>
-<button onclick="getVideo('likee')">Likee</button>
-</div>
+<input id="link" placeholder="Paste video link">
+<br>
+<button onclick="getVideo()">DOWNLOAD</button>
 
 <div id="result"></div>
 
 <script>
-async function getVideo(platform) {
-  const url = document.getElementById("url").value;
-  const resultBox = document.getElementById("result");
-  if (!url) { resultBox.innerHTML = "Paste a video link first"; return; }
-  resultBox.innerHTML = "Fetching download options...";
+async function getVideo() {
+  const url = document.getElementById("link").value;
+  if (!url) return;
 
-  try {
-    const res = await fetch(`/api/${platform}?url=` + encodeURIComponent(url));
-    const data = await res.json();
+  const res = await fetch("/api/info?url=" + encodeURIComponent(url));
+  const data = await res.json();
 
-    if (data.error) { resultBox.innerHTML = data.error; return; }
+  const result = document.getElementById("result");
+  result.innerHTML = "";
 
-    let html = "<h3>Download Options</h3>";
-    if (data.thumbnail) html += `<img src="${data.thumbnail}" width="200"><br>`;
-
-    data.qualities.forEach(q => {
-      html += `<a class="download-link" href="/download?url=${encodeURIComponent(q.url)}" target="_blank" download>Download ${q.quality}</a>`;
-    });
-
-    resultBox.innerHTML = html;
-  } catch {
-    resultBox.innerHTML = "Failed to fetch video";
+  if (!data.downloads) {
+    result.innerHTML = "Failed to get video";
+    return;
   }
+
+  const img = document.createElement("img");
+  img.src = data.thumbnail;
+  img.style.width = "180px";
+  img.style.borderRadius = "10px";
+  result.appendChild(img);
+
+  const title = document.createElement("p");
+  title.innerText = data.title;
+  result.appendChild(title);
+
+  data.downloads.forEach(v => {
+    const btn = document.createElement("a");
+    btn.href = v.url;
+    btn.innerText = "Download " + v.quality;
+    btn.download = "";
+    btn.className = "download-btn";
+    btn.style.display = "block";
+    btn.style.margin = "10px";
+    result.appendChild(btn);
+  });
+
+  document.getElementById("link").value = "";
 }
 </script>
 
