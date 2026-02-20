@@ -1,27 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡ Downloader</title>
-<link rel="stylesheet" href="style.css">
+<title>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡ Cleaner</title>
 </head>
 <body>
-<h1>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡ Downloader</h1>
 
-<input type="text" id="url" placeholder="Paste video link here">
-<select id="platform">
-  <option value="tiktok">TikTok</option>
-  <option value="youtube">YouTube</option>
-  <option value="instagram">Instagram</option>
-  <option value="facebook">Facebook</option>
-  <option value="reddit">Reddit</option>
-  <option value="pinterest">Pinterest</option>
-</select>
-<button id="downloadBtn">Download</button>
+<h2>Paste Link</h2>
+<input id="url" placeholder="Paste link here">
+<button onclick="clean()">Clean</button>
 
-<div id="result"></div>
-<div id="counter">Downloads: 0</div>
+<p id="result"></p>
 
-<script src="script.js"></script>
+<script>
+async function clean() {
+  const url = document.getElementById("url").value;
+
+  const res = await fetch("/clean", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url })
+  });
+
+  const data = await res.json();
+  document.getElementById("result").innerText = data.cleaned;
+}
+</script>
+
 </body>
 </html>
