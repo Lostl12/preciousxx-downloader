@@ -1,48 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRECIOUS x ♡</title>
 
 <style>
-body {
+body{
   font-family: Arial;
-  text-align: center;
-  background: #0f0f0f;
-  color: white;
+  background:#111;
+  color:white;
+  text-align:center;
+  padding:30px;
 }
-
-input {
-  width: 80%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  margin-top: 20px;
+input{
+  width:90%;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+  margin-bottom:10px;
 }
-
-button {
-  padding: 12px 20px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 8px;
-  background: #ff2e63;
-  color: white;
-  font-weight: bold;
+button{
+  padding:12px 20px;
+  border:none;
+  border-radius:8px;
+  background:#ff0055;
+  color:white;
+  font-size:16px;
 }
-
-.download-btn {
-  background: #08d9d6;
-  color: black;
-  padding: 10px;
-  border-radius: 8px;
-  text-decoration: none;
+.card{
+  margin-top:20px;
 }
-
-#result {
-  margin-top: 20px;
+img{
+  width:90%;
+  border-radius:10px;
+}
+a{
+  display:block;
+  background:#222;
+  margin:8px;
+  padding:10px;
+  border-radius:8px;
+  color:white;
+  text-decoration:none;
 }
 </style>
-
 </head>
 
 <body>
@@ -51,48 +52,29 @@ button {
 
 <input id="link" placeholder="Paste video link">
 <br>
-<button onclick="getVideo()">DOWNLOAD</button>
+<button onclick="download()">DOWNLOAD</button>
 
 <div id="result"></div>
 
 <script>
-async function getVideo() {
+async function download(){
   const url = document.getElementById("link").value;
-  if (!url) return;
-
-  const res = await fetch("/api/info?url=" + encodeURIComponent(url));
-  const data = await res.json();
-
-  const result = document.getElementById("result");
-  result.innerHTML = "";
-
-  if (!data.downloads) {
-    result.innerHTML = "Failed to get video";
-    return;
-  }
-
-  const img = document.createElement("img");
-  img.src = data.thumbnail;
-  img.style.width = "180px";
-  img.style.borderRadius = "10px";
-  result.appendChild(img);
-
-  const title = document.createElement("p");
-  title.innerText = data.title;
-  result.appendChild(title);
-
-  data.downloads.forEach(v => {
-    const btn = document.createElement("a");
-    btn.href = v.url;
-    btn.innerText = "Download " + v.quality;
-    btn.download = "";
-    btn.className = "download-btn";
-    btn.style.display = "block";
-    btn.style.margin = "10px";
-    result.appendChild(btn);
+  const res = await fetch("/fetch",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json"},
+    body:JSON.stringify({ url })
   });
 
-  document.getElementById("link").value = "";
+  const data = await res.json();
+
+  document.getElementById("result").innerHTML = `
+    <div class="card">
+      <img src="${data.thumbnail}">
+      ${data.downloads.map(d =>
+        `<a href="${d.url}" download>Download ${d.quality}</a>`
+      ).join("")}
+    </div>
+  `;
 }
 </script>
 
