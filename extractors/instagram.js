@@ -1,25 +1,28 @@
-const axios = require("axios");
+import fetch from "node-fetch";
 
-module.exports = async function(url) {
-  // Use an Instagram scraping API (free public)
-  const api = `https://api.akuari.my.id/instagram?url=${encodeURIComponent(url)}`;
-  const response = await axios.get(api);
+export default async function instagram(url) {
+  try {
+    // Make sure URL ends with ?__a=1 to get JSON data
+    let apiUrl = url;
+    if (!url.includes("?__a=1")) apiUrl += "?__a=1&__d=dis";
 
-  if (!response.data || !response.data.result) return null;
+    const res = await fetch(apiUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+      },
+    });
+    const data = await res.json();
 
-  const media = response.data.result;
+    const media = data.graphql.shortcode_media;
+    let videoUrl = media.video_url || (media.edge_sidecar_to_children?.edges[0].node.video_url) || "";
+    let thumbnail = media.display_url || "";
 
-  // Prepare qualities array
-  const qualities = media.map((item, index) => {
     return {
-      quality: "HD",
-      url: `/getfile?url=${encodeURIComponent(item.url)}`
+      thumbnail,
+      size: "Unknown",
+      qualities: [{ name: "HD", url: videoUrl }],
     };
-  });
-
-  return {
-    thumbnail: media[0].thumbnail || "",
-    size: `${media.length} file(s)`,
-    qualities
-  };
-};
+  } catch (err) {
+    return null;
+  }
+}
