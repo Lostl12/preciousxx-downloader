@@ -2,7 +2,12 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>TikTok Downloader</title>
+
+<!-- INSTALL SUPPORT -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f0f0f">
 
 <style>
 body {background:#0f0f0f; color:white; font-family:Arial,sans-serif; text-align:center; padding:30px;}
@@ -64,19 +69,13 @@ function clearLink() {
   document.getElementById("result").innerHTML = "";
 }
 
-/* UPDATED PASTE FUNCTION — works even if clipboard blocked */
 async function pasteLink() {
-  const input = document.getElementById("link");
-
-  if (navigator.clipboard && window.isSecureContext) {
-    try {
-      input.value = await navigator.clipboard.readText();
-      return;
-    } catch (err) {}
+  try {
+    const text = await navigator.clipboard.readText();
+    document.getElementById("link").value = text;
+  } catch (err) {
+    alert("Use HTTPS site and allow clipboard permission");
   }
-
-  const text = prompt("Paste your TikTok link here:");
-  if (text) input.value = text;
 }
 </script>
 
