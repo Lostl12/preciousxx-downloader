@@ -9,7 +9,5 @@ export default async function likee(url) {
     const thumbnailMatch = html.match(/"cover_url":"(.*?)"/);
     const thumbnail = thumbnailMatch ? thumbnailMatch[1].replace(/\\/g, "") : "";
     return { thumbnail, size: "Unknown", qualities: [{ name: "HD", url: videoUrl }] };
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
