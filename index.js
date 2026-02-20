@@ -1,64 +1,59 @@
 import express from "express";
+import fetch from "node-fetch"; // make sure in package.json
 import path from "path";
-import { fileURLToPath } from "url";
-import axios from "axios";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+app.use(express.static("public"));
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
-
-/* FETCH MEDIA INFO */
-app.post("/fetch", async (req, res) => {
-  const { url } = req.body;
-
-  if (!url) return res.status(400).json({ error: "No link" });
-
+// UNIVERSAL PREVIEW ROUTE
+app.get("/preview", async (req, res) => {
+  const url = req.query.url;
   try {
-    // fake demo preview so UI always shows something clean
+    let media = { thumbnail:"https://via.placeholder.com/320x180", video: url };
+
+    // Platform detection
+    if(url.includes("tiktok.com")) {
+      const r = await fetch(`https://tikwm.com/api/?url=${encodeURIComponent(url)}`);
+      const data = await r.json();
+      media = { thumbnail: data.data.cover, video: data.data.play };
+    } 
+    else if(url.includes("instagram.com")) {
+      // placeholder API — replace with working IG scraper
+      media = { thumbnail:"https://via.placeholder.com/320x180?text=Instagram", video:url };
+    } 
+    else if(url.includes("facebook.com")) {
+      media = { thumbnail:"https://via.placeholder.com/320x180?text=Facebook", video:url };
+    } 
+    else if(url.includes("pinterest.com")) {
+      media = { thumbnail:"https://via.placeholder.com/320x180?text=Pinterest", video:url };
+    } 
+    else if(url.includes("youtube.com") || url.includes("youtu.be")) {
+      media = { thumbnail:"https://via.placeholder.com/320x180?text=YouTube", video:url };
+    }
+
     res.json({
-      thumbnail: "https://i.imgur.com/7b1XK0E.jpeg",
-      downloads: [
-        { quality: "480p", url: `/download?url=${encodeURIComponent(url)}` },
-        { quality: "720p", url: `/download?url=${encodeURIComponent(url)}` }
-      ]
+      thumbnail: media.thumbnail,
+      qualities: [{ label:"Download Video", url: media.video }]
     });
 
-  } catch {
-    res.status(500).json({ error: "Failed to fetch media" });
+  } catch(e) {
+    res.json({ error:"Cannot fetch media" });
   }
 });
 
-/* FORCE REAL FILE DOWNLOAD */
+// FORCE DOWNLOAD
 app.get("/download", async (req, res) => {
-  const fileUrl = req.query.url;
-  if (!fileUrl) return res.status(400).send("No file");
-
+  const videoUrl = req.query.url;
   try {
-    const response = await axios({
-      url: fileUrl,
-      method: "GET",
-      responseType: "stream",
-      maxRedirects: 5,
-      headers: {
-        "User-Agent": "Mozilla/5.0"
-      }
-    });
-
-    res.setHeader("Content-Disposition", "attachment; filename=video.mp4");
-    res.setHeader("Content-Type", "video/mp4");
-
-    response.data.pipe(res);
-
-  } catch {
+    const response = await fetch(videoUrl);
+    res.setHeader("Content-Disposition","attachment; filename=video.mp4");
+    res.setHeader("Content-Type","video/mp4");
+    response.body.pipe(res);
+  } catch(e) {
     res.status(500).send("Download failed");
   }
 });
 
-app.listen(PORT, () => {
-  console.log("Server running");
-});
+// PORT
+const PORT = process.env.PORT || 3000;
+app.listen(PORT,()=>console.log("Server running on port "+PORT));
