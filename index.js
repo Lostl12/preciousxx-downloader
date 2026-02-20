@@ -1,98 +1,92 @@
-const express = require("express");
-const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
+import express from "express";
+import fs from "fs";
+import path from "path";
 
-// Import extractors
-const tiktok = require("./extractors/tiktok");
-const instagram = require("./extractors/instagram");
-const facebook = require("./extractors/facebook");
-const twitter = require("./extractors/twitter");
-const youtube = require("./extractors/youtube");
-const pinterest = require("./extractors/pinterest");
-const reddit = require("./extractors/reddit");
-const likee = require("./extractors/likee");
-const vimeo = require("./extractors/vimeo");
-const dailymotion = require("./extractors/dailymotion");
+// Import all extractors
+import tiktok from "./extractors/tiktok.js";
+import instagram from "./extractors/instagram.js";
+import facebook from "./extractors/facebook.js";
+import twitter from "./extractors/twitter.js";
+import youtube from "./extractors/youtube.js";
+import pinterest from "./extractors/pinterest.js";
+import reddit from "./extractors/reddit.js";
+import vimeo from "./extractors/vimeo.js";
+import dailymotion from "./extractors/dailymotion.js";
+import likee from "./extractors/likee.js";
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve frontend
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
+// Serve static files
+app.use(express.static(path.join(process.cwd(), "public")));
 
-// ======== Persistent download counter setup ========
-const counterFile = path.join(__dirname, "utils/counter.json");
-
-// Ensure counter file exists
+// Counter setup
+const counterFile = path.join(process.cwd(), "utils/counter.json");
 if (!fs.existsSync(counterFile)) {
-  fs.writeFileSync(counterFile, JSON.stringify({ downloads: 0 }, null, 2));
+  fs.writeFileSync(counterFile, JSON.stringify({ totalDownloads: 0 }, null, 2));
 }
 
-// ======== Download request route ========
+// Universal download route
 app.post("/download", async (req, res) => {
   try {
-    const url = req.body.url;
-    let data = null;
+    const { url } = req.body;
+    let result = null;
 
-    // Detect platform
-    if (url.includes("tiktok.com")) data = await tiktok(url);
-    else if (url.includes("instagram.com")) data = await instagram(url);
-    else if (url.includes("facebook.com")) data = await facebook(url);
-    else if (url.includes("twitter.com") || url.includes("x.com")) data = await twitter(url);
-    else if (url.includes("youtube.com") || url.includes("youtu.be")) data = await youtube(url);
-    else if (url.includes("pinterest.com")) data = await pinterest(url);
-    else if (url.includes("reddit.com")) data = await reddit(url);
-    else if (url.includes("likee.video")) data = await likee(url);
-    else if (url.includes("vimeo.com")) data = await vimeo(url);
-    else if (url.includes("dailymotion.com")) data = await dailymotion(url);
+    if (!url) return res.json({ success: false, message: "No URL provided" });
 
-    if (!data) return res.json({ success: false });
+    // Platform detection
+    if (url.includes("tiktok.com")) result = await tiktok(url);
+    else if (url.includes("instagram.com")) result = await instagram(url);
+    else if (url.includes("facebook.com") || url.includes("fb.watch")) result = await facebook(url);
+    else if (url.includes("twitter.com") || url.includes("x.com")) result = await twitter(url);
+    else if (url.includes("youtube.com") || url.includes("youtu.be")) result = await youtube(url);
+    else if (url.includes("pinterest.com")) result = await pinterest(url);
+    else if (url.includes("reddit.com")) result = await reddit(url);
+    else if (url.includes("vimeo.com")) result = await vimeo(url);
+    else if (url.includes("dailymotion.com")) result = await dailymotion(url);
+    else if (url.includes("likee.video")) result = await likee(url);
 
-    // Increment download counter
-    let counter = JSON.parse(fs.readFileSync(counterFile, "utf-8"));
-    counter.downloads += 1;
+    if (!result) return res.json({ success: false, message: "Platform not supported yet" });
+
+    // Increment counter
+    const counter = JSON.parse(fs.readFileSync(counterFile, "utf-8"));
+    counter.totalDownloads += 1;
     fs.writeFileSync(counterFile, JSON.stringify(counter, null, 2));
 
-    // Send response
     res.json({
       success: true,
-      thumbnail: data.thumbnail,
-      size: data.size,
-      qualities: data.qualities,
-      totalDownloads: counter.downloads
+      thumbnail: result.thumbnail,
+      size: result.size || "Unknown",
+      qualities: result.qualities || [],
+      totalDownloads: counter.totalDownloads
     });
 
   } catch (err) {
     console.log(err);
-    res.json({ success: false });
+    res.json({ success: false, message: "Server error" });
   }
 });
 
-// ======== Get total downloads route ========
+// Get total downloads
 app.get("/counter", (req, res) => {
   try {
     const counter = JSON.parse(fs.readFileSync(counterFile, "utf-8"));
-    res.json({ totalDownloads: counter.downloads });
-  } catch (err) {
+    res.json({ totalDownloads: counter.totalDownloads });
+  } catch {
     res.json({ totalDownloads: 0 });
   }
 });
 
-// ======== Force file download route ========
+// Force file download
 app.get("/getfile", async (req, res) => {
   try {
     const fileUrl = req.query.url;
+    if (!fileUrl) return res.send("No file URL provided");
 
-    const response = await axios({
-      url: fileUrl,
-      method: "GET",
-      responseType: "stream"
-    });
+    const axios = (await import("axios")).default;
+    const response = await axios({ url: fileUrl, method: "GET", responseType: "stream" });
 
     res.setHeader("Content-Disposition", "attachment; filename=preciousxx.mp4");
     res.setHeader("Content-Type", "video/mp4");
