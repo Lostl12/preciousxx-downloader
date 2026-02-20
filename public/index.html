@@ -2,79 +2,61 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PRECIOUS x ♡</title>
+<title>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x♡</title>
 
 <style>
-body{
-  font-family: Arial;
-  background:#111;
-  color:white;
-  text-align:center;
-  padding:30px;
-}
-input{
-  width:90%;
-  padding:12px;
-  border-radius:8px;
-  border:none;
-  margin-bottom:10px;
-}
-button{
-  padding:12px 20px;
-  border:none;
-  border-radius:8px;
-  background:#ff0055;
-  color:white;
-  font-size:16px;
-}
-.card{
-  margin-top:20px;
-}
-img{
-  width:90%;
-  border-radius:10px;
-}
-a{
-  display:block;
-  background:#222;
-  margin:8px;
-  padding:10px;
-  border-radius:8px;
-  color:white;
-  text-decoration:none;
-}
+body {background:#0f0f0f; color:white; font-family:Arial,sans-serif; text-align:center; padding:30px;}
+input {width:90%; padding:12px; border-radius:10px; border:none; margin-bottom:15px;}
+button {padding:12px 20px; border-radius:10px; border:none; cursor:pointer; font-weight:bold;}
+.fetch-btn {background:#444; color:white;}
+.download-btn {background:#ff4081; color:white; margin:8px;}
+.clear-btn {background:#00bcd4; color:white; margin:8px;}
+.card {margin-top:20px; padding:20px; background:#1a1a1a; border-radius:15px;}
+img {width:200px; border-radius:10px;}
 </style>
 </head>
 
 <body>
-
-<h2>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡</h2>
+<h2>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x♡</h2>
 
 <input id="link" placeholder="Paste video link">
 <br>
-<button onclick="download()">DOWNLOAD</button>
+<button class="fetch-btn" onclick="getMedia()">Fetch Media</button>
+<button class="clear-btn" onclick="clearLink()">Clear</button>
 
 <div id="result"></div>
 
 <script>
-async function download(){
+async function getMedia() {
   const url = document.getElementById("link").value;
-  const res = await fetch("/fetch",{
-    method:"POST",
-    headers:{ "Content-Type":"application/json"},
-    body:JSON.stringify({ url })
-  });
-
+  if(!url) return alert("Paste a link!");
+  
+  const res = await fetch("/preview?url=" + encodeURIComponent(url));
   const data = await res.json();
+
+  if(!data.qualities) {
+    document.getElementById("result").innerHTML = "Cannot fetch media";
+    return;
+  }
+
+  let buttons = "";
+  data.qualities.forEach(q => {
+    buttons += `<a href="/download?url=${encodeURIComponent(q.url)}">
+                  <button class="download-btn">${q.label}</button>
+                </a>`;
+  });
 
   document.getElementById("result").innerHTML = `
     <div class="card">
       <img src="${data.thumbnail}">
-      ${data.downloads.map(d =>
-        `<a href="${d.url}" download>Download ${d.quality}</a>`
-      ).join("")}
+      <div>${buttons}</div>
     </div>
   `;
+}
+
+function clearLink() {
+  document.getElementById("link").value = "";
+  document.getElementById("result").innerHTML = "";
 }
 </script>
 
