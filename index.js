@@ -1,11 +1,15 @@
+import express from "express";
+import fetch from "node-fetch";
+
+const app = express();
+app.use(express.static("public"));
+
 app.get("/preview", async (req, res) => {
   const url = req.query.url;
 
   try {
 
-    // ------------------------------
-    // 1️⃣ TikTok (KEEP EXACTLY AS IS)
-    // ------------------------------
+    // ✅ TikTok (keep your good options)
     if (url.includes("tiktok.com")) {
       const r = await fetch(`https://tikwm.com/api/?url=${encodeURIComponent(url)}`);
       const d = await r.json();
@@ -20,9 +24,7 @@ app.get("/preview", async (req, res) => {
       });
     }
 
-    // ---------------------------------------------
-    // 2️⃣ Instagram / Facebook / Pinterest / YouTube
-    // ---------------------------------------------
+    // ✅ Other platforms (IG, FB, Pinterest, YouTube)
     if (
       url.includes("instagram.com") ||
       url.includes("facebook.com") ||
@@ -53,9 +55,6 @@ app.get("/preview", async (req, res) => {
       });
     }
 
-    // ------------------------------
-    // 3️⃣ fallback if unsupported
-    // ------------------------------
     return res.json({ error: "Cannot fetch media" });
 
   } catch (e) {
@@ -63,3 +62,18 @@ app.get("/preview", async (req, res) => {
     res.json({ error: "Server error" });
   }
 });
+
+// force real download to phone
+app.get("/download", async (req, res) => {
+  try {
+    const r = await fetch(req.query.url);
+    res.setHeader("Content-Disposition", "attachment; filename=video.mp4");
+    res.setHeader("Content-Type", "video/mp4");
+    r.body.pipe(res);
+  } catch {
+    res.status(500).send("Download failed");
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server running"));
