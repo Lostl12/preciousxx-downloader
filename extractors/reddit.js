@@ -8,7 +8,5 @@ export default async function reddit(url) {
     const videoUrl = post.secure_media?.reddit_video?.fallback_url || "";
     const thumbnail = post.thumbnail || "";
     return { thumbnail, size: "Unknown", qualities: [{ name: "HD", url: videoUrl }] };
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
