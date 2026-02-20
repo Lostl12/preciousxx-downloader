@@ -1,132 +1,109 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Preciousxx Downloader</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: #0f172a;
-      color: white;
-      text-align: center;
-      padding: 40px;
-    }
+<body style="background: #121212; color: white; font-family: 'Segoe UI', sans-serif;">
 
-    .box {
-      max-width: 500px;
-      margin: auto;
-    }
+  <!-- ===== SITE HEADER ===== -->
+  <header style="text-align:center; margin-top:30px; margin-bottom:40px;">
+    <h1 style="
+      font-size:36px;
+      font-weight:bold;
+      letter-spacing:3px;
+      color:#00ffff;
+      text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;">
+      𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡
+    </h1>
+    <p style="color: gray; margin-top:-10px; font-size:16px;">
+      All Social Media Downloader
+    </p>
+  </header>
 
-    input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 8px;
-      border: none;
-      margin-top: 10px;
-    }
-
-    button {
-      padding: 12px 20px;
-      margin-top: 15px;
-      border-radius: 8px;
-      border: none;
-      background: #22c55e;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      width: 100%;
-    }
-
-    #loader {
-      display: none;
-      margin-top: 20px;
-    }
-
-    .spinner {
-      border: 5px solid #1e293b;
-      border-top: 5px solid #22c55e;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-      margin: auto;
-    }
-
-    @keyframes spin {
-      100% { transform: rotate(360deg); }
-    }
-
-    video {
-      width: 100%;
-      margin-top: 20px;
-      border-radius: 10px;
-    }
-
-    .quality-btn {
-      margin-top: 10px;
-      background: #3b82f6;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="box">
-    <h1>Preciousxx Downloader</h1>
-    <p>Download videos from social media</p>
-
-    <form id="form">
-      <input type="text" id="url" placeholder="Paste video link..." required>
-      <button type="submit">Download</button>
-    </form>
-
-    <div id="loader">
-      <div class="spinner"></div>
-      <p>Fetching media...</p>
-    </div>
-
-    <div id="result"></div>
+  <!-- ===== DOWNLOAD BOX ===== -->
+  <div style="text-align:center; margin-bottom:50px;">
+    <input id="url-input" type="text" placeholder="Paste video link here" style="
+      width:70%;
+      max-width:500px;
+      padding:12px 15px;
+      border-radius:10px;
+      border:none;
+      font-size:16px;
+      outline:none;
+    ">
+    <button id="download-btn" style="
+      padding:12px 25px;
+      margin-left:10px;
+      border:none;
+      border-radius:10px;
+      background: #00ffff;
+      color:#121212;
+      font-weight:bold;
+      cursor:pointer;
+      transition:0.3s;
+    " onmouseover="this.style.background='#00e5e5'" onmouseout="this.style.background='#00ffff'">
+      Download
+    </button>
   </div>
 
-<script>
-document.getElementById("form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+  <!-- ===== DOWNLOAD INFO ===== -->
+  <div id="download-info" style="text-align:center; font-size:14px; color:gray; margin-bottom:30px;">
+    <!-- Thumbnail, progress, and download info will appear here -->
+  </div>
 
-  const url = document.getElementById("url").value;
-  const loader = document.getElementById("loader");
-  const result = document.getElementById("result");
+  <!-- ===== TOTAL DOWNLOAD COUNTER ===== -->
+  <div id="download-counter" style="text-align:center; font-weight:bold; margin-bottom:20px;">
+    Total downloads: 0
+  </div>
 
-  loader.style.display = "block";
-  result.innerHTML = "";
+  <!-- ===== SCRIPT ===== -->
+  <script>
+    // Fetch total downloads
+    async function updateCounter() {
+      try {
+        const res = await fetch("/counter");
+        const data = await res.json();
+        document.getElementById("download-counter").innerText =
+          "Total downloads: " + data.totalDownloads;
+      } catch (err) {
+        console.log("Failed to fetch counter", err);
+      }
+    }
 
-  const res = await fetch("/download", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ url })
-  });
+    updateCounter();
+    setInterval(updateCounter, 30000); // refresh every 30s
 
-  const data = await res.json();
-
-  loader.style.display = "none";
-
-  if (!data.success) {
-    result.innerHTML = "<p>Failed to fetch media</p>";
-    return;
-  }
-
-  let html = `<video controls src="${data.preview}"></video>`;
-
-  data.qualities.forEach(q => {
-    html += `
-      <a href="${q.url}" download>
-        <button class="quality-btn">
-          Download ${q.quality}
-        </button>
-      </a>
-    `;
-  });
-
-  result.innerHTML = html;
-});
-</script>
+    // Handle download click
+    document.getElementById("download-btn").addEventListener("click", async () => {
+      const url = document.getElementById("url-input").value.trim();
+      if(!url) return alert("Paste a link first!");
+      
+      const infoDiv = document.getElementById("download-info");
+      infoDiv.innerHTML = "Fetching download info...";
+      
+      try {
+        const res = await fetch("/download", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+        if(data.success) {
+          infoDiv.innerHTML = `
+            <img src="${data.thumbnail}" alt="thumb" style="max-width:200px; border-radius:10px; margin-bottom:10px;"><br>
+            File size: ${data.size || 'Unknown'}<br>
+            <button onclick="window.open('${data.qualities[0].url}', '_blank')" style="
+              padding:8px 15px;
+              border:none;
+              border-radius:8px;
+              background:#00ffff;
+              color:#121212;
+              font-weight:bold;
+              cursor:pointer;
+            ">Download HD</button>
+          `;
+        } else {
+          infoDiv.innerHTML = "Failed to fetch media.";
+        }
+      } catch(e) {
+        infoDiv.innerHTML = "Error fetching media.";
+      }
+    });
+  </script>
 
 </body>
-</html>
