@@ -4,67 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡ Downloader</title>
-
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #fff5f8;
-  padding: 20px;
-  text-align: center;
-}
-
-h1 {
-  color: #d63384;
-  margin-bottom: 20px;
-}
-
-input {
-  width: 90%;
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-bottom: 15px;
-}
-
-button {
-  padding: 12px 18px;
-  margin: 6px;
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  cursor: pointer;
-  background: #e83e8c;
-  color: white;
-}
-
-button:hover {
-  background: #c2185b;
-}
-
-#result {
-  margin-top: 20px;
-  font-size: 16px;
-}
-
-.download-link {
-  display: block;
-  margin: 10px auto;
-  padding: 10px;
-  width: 80%;
-  background: #28a745;
-  color: white;
-  border-radius: 8px;
-  text-decoration: none;
-}
+body { font-family: Arial, sans-serif; background: #fff5f8; text-align: center; padding: 20px; }
+h1 { color: #d63384; margin-bottom: 20px; }
+input { width: 90%; padding: 12px; font-size: 16px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ccc; }
+button { padding: 12px 18px; margin: 6px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; background: #e83e8c; color: white; }
+button:hover { background: #c2185b; }
+#result { margin-top: 20px; font-size: 16px; }
+.download-link { display: block; margin: 10px auto; padding: 10px; width: 80%; background: #28a745; color: white; border-radius: 8px; text-decoration: none; }
 </style>
 </head>
-
 <body>
 
 <h1>𝑷𝑹𝑬𝑪𝑰𝑶𝑼𝑺 x ♡</h1>
 
-<input id="url" placeholder="Paste video link">
+<input id="url" placeholder="Paste video link here">
 
 <div>
 <button onclick="getVideo('tiktok')">TikTok</button>
@@ -85,35 +39,23 @@ button:hover {
 async function getVideo(platform) {
   const url = document.getElementById("url").value;
   const resultBox = document.getElementById("result");
-
-  if (!url) {
-    resultBox.innerHTML = "Paste a video link first";
-    return;
-  }
-
+  if (!url) { resultBox.innerHTML = "Paste a video link first"; return; }
   resultBox.innerHTML = "Fetching download options...";
 
   try {
     const res = await fetch(`/api/${platform}?url=` + encodeURIComponent(url));
     const data = await res.json();
 
-    if (data.error) {
-      resultBox.innerHTML = data.error;
-      return;
-    }
+    if (data.error) { resultBox.innerHTML = data.error; return; }
 
     let html = "<h3>Download Options</h3>";
-
-    if (data.thumbnail) {
-      html += `<img src="${data.thumbnail}" width="200"><br>`;
-    }
+    if (data.thumbnail) html += `<img src="${data.thumbnail}" width="200"><br>`;
 
     data.qualities.forEach(q => {
-      html += `<a class="download-link" href="${q.url}" target="_blank">Download ${q.quality}</a>`;
+      html += `<a class="download-link" href="/download?url=${encodeURIComponent(q.url)}" target="_blank" download>Download ${q.quality}</a>`;
     });
 
     resultBox.innerHTML = html;
-
   } catch {
     resultBox.innerHTML = "Failed to fetch video";
   }
