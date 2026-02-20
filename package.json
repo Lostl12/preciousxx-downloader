@@ -11,7 +11,6 @@
     "axios": "^1.6.0",
     "node-fetch": "^3.3.2",
     "ytdl-core": "^4.11.0",
-    "instagram-scraper": "^1.2.0",
     "reddit-fetch": "^1.0.0",
     "p-limit": "^4.0.0",
     "fs-extra": "^11.1.1"
